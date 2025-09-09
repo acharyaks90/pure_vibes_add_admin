@@ -1,18 +1,8 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { AuthProvider } from './components/AuthProvider';
 import { AdminProvider } from './components/Admin/AdminProvider';
-import { LandingPage } from './components/Landing/LandingPage';
-import { ProtectedRoute } from './components/ProtectedRoute';
 import { AdminProtectedRoute } from './components/Admin/AdminProtectedRoute';
-import { Layout } from './components/Layout/Layout';
-import { LoginForm } from './components/Auth/LoginForm';
 import { AdminLogin } from './components/Admin/AdminLogin';
-import { Dashboard } from './components/Dashboard/Dashboard';
-import { MyDashboard } from './pages/MyDashboard';
-import { Sarthi } from './pages/Sarthi';
-import { Brahma } from './pages/Brahma';
-import { Kavach } from './pages/Kavach';
 import { AdminDashboardPage } from './pages/admin/AdminDashboardPage';
 import { SarthiAdminPage } from './pages/admin/SarthiAdminPage';
 import { CustomersAdminPage } from './pages/admin/CustomersAdminPage';
@@ -26,8 +16,7 @@ const AppContent: React.FC = () => {
   return (
     <Routes>
       {/* Public routes */}
-      <Route path="/" element={<LandingPage />} />
-      <Route path="/login" element={<LoginForm />} />
+      <Route path="/" element={<Navigate to="/admin/login" replace />} />
       
       {/* Admin routes */}
       <Route path="/admin/login" element={<AdminLogin />} />
@@ -71,37 +60,6 @@ const AppContent: React.FC = () => {
           <SettingsAdminPage />
         </AdminProtectedRoute>
       } />
-      
-      {/* Protected routes */}
-      <Route path="/dashboard" element={
-        <ProtectedRoute>
-          <Layout>
-            <Dashboard />
-          </Layout>
-        </ProtectedRoute>
-      } />
-      <Route path="/my-dashboard" element={
-        <ProtectedRoute>
-          <Layout>
-            <MyDashboard />
-          </Layout>
-        </ProtectedRoute>
-      } />
-      <Route path="/sarthi" element={
-        <ProtectedRoute>
-          <Sarthi />
-        </ProtectedRoute>
-      } />
-      <Route path="/brahma" element={
-        <ProtectedRoute>
-          <Brahma />
-        </ProtectedRoute>
-      } />
-      <Route path="/kavach" element={
-        <ProtectedRoute>
-          <Kavach />
-        </ProtectedRoute>
-      } />
     </Routes>
   );
 };
@@ -109,11 +67,9 @@ const AppContent: React.FC = () => {
 function App() {
   return (
     <AdminProvider>
-      <AuthProvider>
-        <Router>
-          <AppContent />
-        </Router>
-      </AuthProvider>
+      <Router>
+        <AppContent />
+      </Router>
     </AdminProvider>
   );
 }

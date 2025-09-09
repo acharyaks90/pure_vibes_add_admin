@@ -31,12 +31,9 @@ export const AdminLogin: React.FC = () => {
         className="max-w-md w-full space-y-8"
       >
         <div className="text-center mb-4">
-          <button
-            onClick={() => navigate('/')}
-            className="text-sm text-slate-400 hover:text-slate-300 underline"
-          >
-            ← Back to Home
-          </button>
+          <p className="text-sm text-slate-400">
+            Pure Vibes Management System
+          </p>
         </div>
         
         <div className="bg-white rounded-2xl shadow-xl p-8">
@@ -44,9 +41,9 @@ export const AdminLogin: React.FC = () => {
             <div className="w-16 h-16 bg-gradient-to-r from-slate-700 to-slate-900 rounded-full flex items-center justify-center mx-auto mb-4">
               <Shield className="w-8 h-8 text-white" />
             </div>
-            <h2 className="text-2xl font-bold text-gray-900">Admin Portal</h2>
+            <h2 className="text-2xl font-bold text-gray-900">Pure Vibes Admin</h2>
             <p className="text-gray-600 mt-2">
-              Secure access to administrative dashboard
+              Administrative dashboard for Pure Vibes platform management
             </p>
           </div>
 
