@@ -86,6 +86,66 @@ export const useAdminProvider = () => {
             createdAt: new Date(),
             lastLogin: new Date(),
           }
+        },
+        {
+          email: 'brahma@purevibes.com',
+          password: 'brahma123',
+          admin: {
+            id: 'admin-3',
+            name: 'Brahma Admin',
+            email: 'brahma@purevibes.com',
+            mobile: '9999999997',
+            role: 'brahma-admin' as const,
+            permissions: ['brahma'],
+            createdAt: new Date(),
+            lastLogin: new Date(),
+          }
+        },
+        {
+          email: 'kavach@purevibes.com',
+          password: 'kavach123',
+          admin: {
+            id: 'admin-4',
+            name: 'Kavach Admin',
+            email: 'kavach@purevibes.com',
+            mobile: '9999999996',
+            role: 'kavach-admin' as const,
+            permissions: ['kavach'],
+            createdAt: new Date(),
+            lastLogin: new Date(),
+          }
+        },
+        {
+          email: 'expert1@purevibes.com',
+          password: 'expert123',
+          admin: {
+            id: 'expert-1',
+            name: 'Dr. Meera Singh',
+            email: 'expert1@purevibes.com',
+            mobile: '9999999995',
+            role: 'expert' as const,
+            permissions: ['expert'],
+            createdAt: new Date(),
+            lastLogin: new Date(),
+            expertId: 'expert-1',
+            specialization: ['Relationship Counseling', 'Family Issues'],
+          }
+        },
+        {
+          email: 'expert2@purevibes.com',
+          password: 'expert123',
+          admin: {
+            id: 'expert-2',
+            name: 'Pandit Rajesh Sharma',
+            email: 'expert2@purevibes.com',
+            mobile: '9999999994',
+            role: 'expert' as const,
+            permissions: ['expert'],
+            createdAt: new Date(),
+            lastLogin: new Date(),
+            expertId: 'expert-2',
+            specialization: ['Vedic Astrology', 'Marriage', 'Career'],
+          }
         }
       ];
 

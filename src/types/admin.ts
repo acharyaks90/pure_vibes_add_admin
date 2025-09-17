@@ -3,10 +3,12 @@ export interface Admin {
   name: string;
   email: string;
   mobile: string;
-  role: 'super-admin' | 'sarthi-admin' | 'brahma-admin' | 'kavach-admin';
+  role: 'super-admin' | 'sarthi-admin' | 'brahma-admin' | 'kavach-admin' | 'expert';
   permissions: string[];
   createdAt: Date;
   lastLogin?: Date;
+  expertId?: string; // For expert users
+  specialization?: string[]; // For expert users
 }
 
 export interface AdminSession {

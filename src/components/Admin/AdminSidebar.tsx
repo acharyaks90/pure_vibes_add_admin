@@ -17,6 +17,11 @@ export const AdminSidebar: React.FC = () => {
   const location = useLocation();
   const { admin } = useAdmin();
 
+  // Don't show sidebar for experts - they have their own interface
+  if (admin?.role === 'expert') {
+    return null;
+  }
+
   const menuItems = [
     {
       id: 'dashboard',

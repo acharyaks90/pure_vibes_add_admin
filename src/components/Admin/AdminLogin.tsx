@@ -109,6 +109,9 @@ export const AdminLogin: React.FC = () => {
             <div className="space-y-1 text-xs">
               <p><strong>Super Admin:</strong> admin@purevibes.com / admin123</p>
               <p><strong>Sarthi Admin:</strong> sarthi@purevibes.com / sarthi123</p>
+              <p><strong>Brahma Admin:</strong> brahma@purevibes.com / brahma123</p>
+              <p><strong>Kavach Admin:</strong> kavach@purevibes.com / kavach123</p>
+              <p><strong>Expert:</strong> expert1@purevibes.com / expert123</p>
             </div>
           </div>
         </div>

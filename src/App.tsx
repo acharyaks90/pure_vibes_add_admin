@@ -4,6 +4,7 @@ import { AdminProvider } from './components/Admin/AdminProvider';
 import { AdminProtectedRoute } from './components/Admin/AdminProtectedRoute';
 import { AdminLogin } from './components/Admin/AdminLogin';
 import { AdminDashboardPage } from './pages/admin/AdminDashboardPage';
+import { ExpertDashboardPage } from './pages/admin/ExpertDashboardPage';
 import { SarthiAdminPage } from './pages/admin/SarthiAdminPage';
 import { CustomersAdminPage } from './pages/admin/CustomersAdminPage';
 import { PaymentsAdminPage } from './pages/admin/PaymentsAdminPage';
@@ -23,6 +24,11 @@ const AppContent: React.FC = () => {
       <Route path="/admin/dashboard" element={
         <AdminProtectedRoute>
           <AdminDashboardPage />
+        </AdminProtectedRoute>
+      } />
+      <Route path="/admin/expert" element={
+        <AdminProtectedRoute requiredRole={['expert']}>
+          <ExpertDashboardPage />
         </AdminProtectedRoute>
       } />
       <Route path="/admin/customers" element={
