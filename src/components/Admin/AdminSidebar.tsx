@@ -17,67 +17,62 @@ export const AdminSidebar: React.FC = () => {
   const location = useLocation();
   const { admin } = useAdmin();
 
-  // Don't show sidebar for experts - they have their own interface
-  if (admin?.role === 'expert') {
-    return null;
-  }
-
   const menuItems = [
     {
       id: 'dashboard',
       label: 'Analytics',
       icon: BarChart3,
       path: '/admin/dashboard',
-      roles: ['super-admin', 'sarthi-admin', 'brahma-admin', 'kavach-admin'],
+      roles: ['super-admin', 'sarthi-admin', 'brahma-admin', 'kavach-admin', 'expert'],
     },
     {
       id: 'customers',
       label: 'Customers',
       icon: Users,
       path: '/admin/customers',
-      roles: ['super-admin'],
+      roles: ['super-admin', 'expert'],
     },
     {
       id: 'sarthi',
       label: 'Sarthi',
       icon: HelpCircle,
       path: '/admin/sarthi',
-      roles: ['super-admin', 'sarthi-admin'],
+      roles: ['super-admin', 'sarthi-admin', 'expert'],
     },
     {
       id: 'brahma',
       label: 'Brahma',
       icon: Star,
       path: '/admin/brahma',
-      roles: ['super-admin', 'brahma-admin'],
+      roles: ['super-admin', 'brahma-admin', 'expert'],
     },
     {
       id: 'kavach',
       label: 'Kavach',
       icon: ShoppingBag,
       path: '/admin/kavach',
-      roles: ['super-admin', 'kavach-admin'],
+      roles: ['super-admin', 'kavach-admin', 'expert'],
     },
     {
       id: 'payments',
       label: 'Payments',
       icon: CreditCard,
       path: '/admin/payments',
-      roles: ['super-admin'],
+      roles: ['super-admin', 'expert'],
     },
     {
       id: 'experts',
       label: 'Experts',
       icon: UserCheck,
       path: '/admin/experts',
-      roles: ['super-admin', 'sarthi-admin'],
+      roles: ['super-admin', 'sarthi-admin', 'expert'],
     },
     {
       id: 'settings',
       label: 'Settings',
       icon: Settings,
       path: '/admin/settings',
-      roles: ['super-admin', 'sarthi-admin', 'brahma-admin', 'kavach-admin'],
+      roles: ['super-admin', 'sarthi-admin', 'brahma-admin', 'kavach-admin', 'expert'],
     },
   ];
 

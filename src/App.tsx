@@ -26,38 +26,33 @@ const AppContent: React.FC = () => {
           <AdminDashboardPage />
         </AdminProtectedRoute>
       } />
-      <Route path="/admin/expert" element={
-        <AdminProtectedRoute requiredRole={['expert']}>
-          <ExpertDashboardPage />
-        </AdminProtectedRoute>
-      } />
       <Route path="/admin/customers" element={
-        <AdminProtectedRoute requiredRole={['super-admin']}>
+        <AdminProtectedRoute requiredRole={['super-admin', 'expert']}>
           <CustomersAdminPage />
         </AdminProtectedRoute>
       } />
       <Route path="/admin/sarthi" element={
-        <AdminProtectedRoute requiredRole={['super-admin', 'sarthi-admin']}>
+        <AdminProtectedRoute requiredRole={['super-admin', 'sarthi-admin', 'expert']}>
           <SarthiAdminPage />
         </AdminProtectedRoute>
       } />
       <Route path="/admin/brahma" element={
-        <AdminProtectedRoute requiredRole={['super-admin', 'brahma-admin']}>
+        <AdminProtectedRoute requiredRole={['super-admin', 'brahma-admin', 'expert']}>
           <BrahmaAdminPage />
         </AdminProtectedRoute>
       } />
       <Route path="/admin/kavach" element={
-        <AdminProtectedRoute requiredRole={['super-admin', 'kavach-admin']}>
+        <AdminProtectedRoute requiredRole={['super-admin', 'kavach-admin', 'expert']}>
           <KavachAdminPage />
         </AdminProtectedRoute>
       } />
       <Route path="/admin/experts" element={
-        <AdminProtectedRoute requiredRole={['super-admin', 'sarthi-admin']}>
+        <AdminProtectedRoute requiredRole={['super-admin', 'sarthi-admin', 'expert']}>
           <ExpertsAdminPage />
         </AdminProtectedRoute>
       } />
       <Route path="/admin/payments" element={
-        <AdminProtectedRoute requiredRole={['super-admin']}>
+        <AdminProtectedRoute requiredRole={['super-admin', 'expert']}>
           <PaymentsAdminPage />
         </AdminProtectedRoute>
       } />

@@ -20,12 +20,7 @@ export const AdminProtectedRoute: React.FC<AdminProtectedRouteProps> = ({
     if (!isLoading && !admin) {
       navigate('/admin/login');
     } else if (admin && requiredRole.length > 0 && !requiredRole.includes(admin.role)) {
-      // Redirect based on role
-      if (admin.role === 'expert') {
-        navigate('/admin/expert');
-      } else {
-        navigate('/admin/dashboard');
-      }
+      navigate('/admin/dashboard');
     }
   }, [admin, isLoading, navigate, requiredRole]);
 

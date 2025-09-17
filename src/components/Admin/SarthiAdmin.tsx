@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Calendar, Clock, User, MessageSquare, AlertCircle, CheckCircle, Filter, Search, Plus, Eye, Edit, UserCheck, Settings, TrendingUp } from 'lucide-react';
+import { Calendar, Clock, User, MessageSquare, AlertCircle, CheckCircle, Filter, Search, Plus, Eye, Edit, UserCheck, Settings, TrendingUp, Download, RefreshCw } from 'lucide-react';
 import { useAdmin } from '../../hooks/useAdmin';
 import { SarthiRequest, Comment } from '../../types/admin';
 import { RequestDetailsModal } from './RequestDetailsModal';
@@ -75,6 +75,8 @@ export const SarthiAdmin: React.FC = () => {
     const success = await updateRequestStatus(requestId, status);
     if (success) {
       fetchSarthiRequests();
+      // Add automatic comment when status changes
+      await addComment(requestId, `Status updated to ${status} by ${admin?.name}`, 'status_change');
     }
   };
 
@@ -386,7 +388,388 @@ export const SarthiAdmin: React.FC = () => {
                         >
                           <Eye className="w-4 h-4" />
                         </button>
-                        <div className="relative">
+                        <button
+                          onClick={() => handleStatusUpdate(request.id, 'completed')}
+                          disabled={request.status === 'completed'}
+                          className="px-3 py-1 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-xs disabled:opacity-50 disabled:cursor-not-allowed"
+                          title="Mark Completed"
+                        >
+                          Complete
+                        </button>
+                        <button
+                          onClick={() => handleStatusUpdate(request.id, 'cancelled')}
+                          disabled={request.status === 'cancelled' || request.status === 'completed'}
+                          className="px-3 py-1 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-xs disabled:opacity-50 disabled:cursor-not-allowed"
+                          title="Cancel Request"
+                        >
+                          Cancel
+                        </button>
+                        <select
+                          value={request.status}
+                          onChange={(e) => handleStatusUpdate(request.id, e.target.value as SarthiRequest['status'])}
+                          className="text-xs border border-gray-300 rounded px-2 py-1 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        >
+                          <option value="unassigned">Unassigned</option>
+                          <option value="assigned">Assigned</option>
+                          <option value="scheduled">Scheduled</option>
+                          <option value="completed">Completed</option>
+                          <option value="cancelled">Cancelled</option>
+                        </select>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {filteredRequests.length === 0 && (
+            <div className="text-center py-12">
+              <AlertCircle className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+              <p className="text-gray-500 text-lg">No requests found matching your criteria</p>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Bulk Actions */}
+      <div className="bg-white rounded-2xl shadow-lg p-6">
+        <h2 className="text-xl font-semibold text-gray-900 mb-4">Quick Actions</h2>
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <button
+            onClick={() => {
+              const unassignedRequests = sarthiRequests.filter(r => r.status === 'unassigned');
+              unassignedRequests.forEach(request => {
+                handleStatusUpdate(request.id, 'assigned');
+              });
+            }}
+            className="flex items-center justify-center px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          >
+            <UserCheck className="w-5 h-5 mr-2" />
+            Auto-Assign All
+          </button>
+          
+          <button
+            onClick={() => {
+              const assignedRequests = sarthiRequests.filter(r => r.status === 'assigned');
+              assignedRequests.forEach(request => {
+                handleStatusUpdate(request.id, 'scheduled');
+              });
+            }}
+            className="flex items-center justify-center px-4 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+          >
+            <Calendar className="w-5 h-5 mr-2" />
+            Schedule All Assigned
+          </button>
+          
+          <button
+            onClick={() => {
+              const scheduledRequests = sarthiRequests.filter(r => r.status === 'scheduled');
+              scheduledRequests.forEach(request => {
+                handleStatusUpdate(request.id, 'completed');
+              });
+            }}
+            className="flex items-center justify-center px-4 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+          >
+            <CheckCircle className="w-5 h-5 mr-2" />
+            Complete All Scheduled
+          </button>
+          
+          <button
+            onClick={() => fetchSarthiRequests()}
+            className="flex items-center justify-center px-4 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
+          >
+            <RefreshCw className="w-5 h-5 mr-2" />
+            Refresh Data
+          </button>
+        </div>
+      </div>
+
+      {/* Priority Management */}
+      <div className="bg-white rounded-2xl shadow-lg p-6">
+        <h2 className="text-xl font-semibold text-gray-900 mb-4">Priority Management</h2>
+        <div className="space-y-4">
+          {['urgent', 'high', 'medium', 'low'].map((priority) => {
+            const priorityRequests = sarthiRequests.filter(r => r.priority === priority);
+            const priorityColor = getPriorityColor(priority as SarthiRequest['priority']);
+            
+            return (
+              <div key={priority} className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
+                <div className="flex items-center space-x-3">
+                  <div className={`w-4 h-4 rounded-full ${priorityColor}`} />
+                  <span className="font-medium text-gray-900 capitalize">{priority} Priority</span>
+                  <span className="text-sm text-gray-600">({priorityRequests.length} requests)</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <button
+                    onClick={() => {
+                      priorityRequests.filter(r => r.status === 'unassigned').forEach(request => {
+                        handleStatusUpdate(request.id, 'assigned');
+                      });
+                    }}
+                    className="px-3 py-1 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm"
+                  >
+                    Assign All
+                  </button>
+                  <button
+                    onClick={() => {
+                      priorityRequests.filter(r => r.status === 'assigned').forEach(request => {
+                        handleStatusUpdate(request.id, 'scheduled');
+                      });
+                    }}
+                    className="px-3 py-1 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors text-sm"
+                  >
+                    Schedule All
+                  </button>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Request Timeline */}
+      <div className="bg-white rounded-2xl shadow-lg p-6">
+        <h2 className="text-xl font-semibold text-gray-900 mb-4">Request Timeline</h2>
+        <div className="space-y-4">
+          {sarthiRequests.slice(0, 5).map((request) => (
+            <div key={request.id} className="flex items-center space-x-4 p-4 bg-gray-50 rounded-lg">
+              <div className={`w-3 h-3 rounded-full ${getPriorityColor(request.priority)}`} />
+              <div className="flex-1">
+                <div className="flex items-center justify-between">
+                  <h3 className="font-medium text-gray-900">{request.problemType}</h3>
+                  <span className={`px-2 py-1 rounded-full text-xs font-medium border ${getStatusColor(request.status)}`}>
+                    {request.status}
+                  </span>
+                </div>
+                <p className="text-sm text-gray-600">{request.userName} • {formatDate(request.createdAt)}</p>
+                {request.expertName && (
+                  <p className="text-sm text-blue-600">Assigned to: {request.expertName}</p>
+                )}
+              </div>
+              <div className="flex items-center space-x-2">
+                <button
+                  onClick={() => handleStatusUpdate(request.id, 'completed')}
+                  disabled={request.status === 'completed'}
+                  className="px-2 py-1 bg-green-600 text-white rounded text-xs hover:bg-green-700 transition-colors disabled:opacity-50"
+                >
+                  Complete
+                </button>
+                <button
+                  onClick={() => setSelectedRequest(request)}
+                  className="px-2 py-1 bg-blue-600 text-white rounded text-xs hover:bg-blue-700 transition-colors"
+                >
+                  Details
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Advanced Filters */}
+      <div className="bg-white rounded-2xl shadow-lg p-6">
+        <h2 className="text-xl font-semibold text-gray-900 mb-4">Advanced Filters</h2>
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Date Range</label>
+            <select className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+              <option value="all">All Time</option>
+              <option value="today">Today</option>
+              <option value="week">This Week</option>
+              <option value="month">This Month</option>
+            </select>
+          </div>
+          
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Expert</label>
+            <select className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+              <option value="all">All Experts</option>
+              {experts.map(expert => (
+                <option key={expert.id} value={expert.id}>{expert.name}</option>
+              ))}
+            </select>
+          </div>
+          
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Priority</label>
+            <select className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+              <option value="all">All Priorities</option>
+              <option value="urgent">Urgent</option>
+              <option value="high">High</option>
+              <option value="medium">Medium</option>
+              <option value="low">Low</option>
+            </select>
+          </div>
+          
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Payment Status</label>
+            <select className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+              <option value="all">All Payments</option>
+              <option value="completed">Completed</option>
+              <option value="pending">Pending</option>
+              <option value="refunded">Refunded</option>
+            </select>
+          </div>
+        </div>
+        
+        <div className="flex justify-end mt-4">
+          <button className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+            Apply Filters
+          </button>
+        </div>
+      </div>
+
+      {/* Export Options */}
+      <div className="bg-white rounded-2xl shadow-lg p-6">
+        <h2 className="text-xl font-semibold text-gray-900 mb-4">Export & Reports</h2>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <button className="flex items-center justify-center px-4 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
+            <Download className="w-5 h-5 mr-2" />
+            Export to Excel
+          </button>
+          
+          <button className="flex items-center justify-center px-4 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors">
+            <Download className="w-5 h-5 mr-2" />
+            Export to PDF
+          </button>
+          
+          <button className="flex items-center justify-center px-4 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">
+            <TrendingUp className="w-5 h-5 mr-2" />
+            Generate Report
+          </button>
+        </div>
+      </div>
+
+      {viewMode === 'table' && (
+        <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
+          <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+            <h2 className="text-xl font-semibold text-gray-900">Request Management</h2>
+            <div className="text-sm text-gray-500">
+              {filteredRequests.length} of {sarthiRequests.length} requests
+            </div>
+          </div>
+          
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Request Details
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Customer
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Expert Assignment
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Status & Timeline
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Actions
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {filteredRequests.map((request) => (
+                  <tr key={request.id} className="hover:bg-gray-50">
+                    <td className="px-6 py-4">
+                      <div className="flex items-start space-x-3">
+                        <div className={`w-3 h-3 rounded-full mt-2 ${getPriorityColor(request.priority)}`} />
+                        <div>
+                          <div className="text-sm font-medium text-gray-900 mb-1">
+                            {request.id}
+                          </div>
+                          <div className="text-sm text-gray-900 font-medium mb-1">
+                            {request.problemType}
+                          </div>
+                          {request.customDescription && (
+                            <div className="text-xs text-gray-500 max-w-xs truncate">
+                              {request.customDescription}
+                            </div>
+                          )}
+                          <div className="flex items-center mt-2">
+                            <span className={`px-2 py-1 rounded-full text-xs font-medium capitalize ${getPriorityColor(request.priority)} text-white`}>
+                              {request.priority}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div>
+                        <div className="text-sm font-medium text-gray-900">{request.userName}</div>
+                        <div className="text-sm text-gray-500">{request.userMobile}</div>
+                        <div className="text-xs text-gray-400 mt-1">
+                          Created: {formatDate(request.createdAt)}
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      {request.expertName ? (
+                        <div className="flex items-center space-x-2">
+                          <UserCheck className="w-4 h-4 text-green-600" />
+                          <div>
+                            <div className="text-sm font-medium text-gray-900">{request.expertName}</div>
+                            {request.scheduledDate && (
+                              <div className="text-xs text-gray-500">
+                                Meeting: {formatDate(request.scheduledDate)}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      ) : (
+                        <button
+                          onClick={() => setShowAssignModal(request.id)}
+                          className="flex items-center space-x-1 px-3 py-1 bg-yellow-100 text-yellow-700 rounded-lg hover:bg-yellow-200 transition-colors text-sm"
+                        >
+                          <UserCheck className="w-4 h-4" />
+                          <span>Assign Expert</span>
+                        </button>
+                      )}
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="space-y-2">
+                        <span className={`px-3 py-1 rounded-full text-xs font-medium border ${getStatusColor(request.status)}`}>
+                          {request.status}
+                        </span>
+                        <div className="text-xs text-gray-500">
+                          Updated: {formatDate(request.updatedAt)}
+                        </div>
+                        <div className={`text-xs ${
+                          request.paymentStatus === 'completed' ? 'text-green-600' : 
+                          request.paymentStatus === 'pending' ? 'text-yellow-600' : 'text-red-600'
+                        }`}>
+                          Payment: {request.paymentStatus}
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center space-x-2">
+                        <button
+                          onClick={() => setSelectedRequest(request)}
+                          className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                          title="View Details"
+                        >
+                          <Eye className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() => handleStatusUpdate(request.id, 'completed')}
+                          disabled={request.status === 'completed'}
+                          className="px-3 py-1 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-xs disabled:opacity-50 disabled:cursor-not-allowed"
+                          title="Mark Completed"
+                        >
+                          Complete
+                        </button>
+                        <button
+                          onClick={() => handleStatusUpdate(request.id, 'cancelled')}
+                          disabled={request.status === 'cancelled' || request.status === 'completed'}
+                          className="px-3 py-1 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-xs disabled:opacity-50 disabled:cursor-not-allowed"
+                          title="Cancel Request"
+                        >
+                          Cancel
+                        </button>
                           <select
                             value={request.status}
                             onChange={(e) => handleStatusUpdate(request.id, e.target.value as SarthiRequest['status'])}
@@ -398,7 +781,6 @@ export const SarthiAdmin: React.FC = () => {
                             <option value="completed">Completed</option>
                             <option value="cancelled">Cancelled</option>
                           </select>
-                        </div>
                       </div>
                     </td>
                   </tr>
