@@ -57,7 +57,6 @@ export const KavachAdmin: React.FC = () => {
   const [selectedOrder, setSelectedOrder] = useState<KavachOrder | null>(null);
   const [showComments, setShowComments] = useState<string | null>(null);
   const [newComment, setNewComment] = useState('');
-  const [activeTab, setActiveTab] = useState<'orders' | 'products'>('orders');
   const [activeTab, setActiveTab] = useState<'orders' | 'products' | 'coupons'>('orders');
 
   useEffect(() => {
