@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Package, Truck, CreditCard, Filter, Search, MapPin, Eye, MessageSquare, Edit, Plus, User, Settings } from 'lucide-react';
 import { KavachProductAdmin } from './KavachProductAdmin';
+import { KavachCouponAdmin } from './KavachCouponAdmin';
 
 interface KavachOrder {
   id: string;
@@ -57,6 +58,7 @@ export const KavachAdmin: React.FC = () => {
   const [showComments, setShowComments] = useState<string | null>(null);
   const [newComment, setNewComment] = useState('');
   const [activeTab, setActiveTab] = useState<'orders' | 'products'>('orders');
+  const [activeTab, setActiveTab] = useState<'orders' | 'products' | 'coupons'>('orders');
 
   useEffect(() => {
     // Mock data - in a real app, this would come from your backend
@@ -239,6 +241,7 @@ export const KavachAdmin: React.FC = () => {
           {[
             { id: 'orders', label: 'Order Management', icon: Package },
             { id: 'products', label: 'Product Management', icon: Settings },
+            { id: 'coupons', label: 'Coupon Management', icon: CreditCard },
           ].map((tab) => {
             const Icon = tab.icon;
             return (
@@ -260,6 +263,8 @@ export const KavachAdmin: React.FC = () => {
       </div>
 
       {activeTab === 'products' && <KavachProductAdmin />}
+
+      {activeTab === 'coupons' && <KavachCouponAdmin />}
 
       {activeTab === 'orders' && (
         <>

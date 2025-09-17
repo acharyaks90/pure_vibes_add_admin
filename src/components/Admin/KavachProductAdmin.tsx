@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Plus, Edit, Trash2, Save, X, Upload, Eye, Package, DollarSign, TrendingUp, AlertTriangle } from 'lucide-react';
-import { Product, ProductCategory } from '../../types/kavach';
+import { Plus, Edit, Trash2, Save, X, Upload, Eye, Package, DollarSign, TrendingUp, AlertTriangle, Image as ImageIcon, Camera } from 'lucide-react';
+import { Product, ProductCategory, ImageUpload } from '../../types/kavach';
 
 export const KavachProductAdmin: React.FC = () => {
   const [products, setProducts] = useState<Product[]>([]);
@@ -40,6 +40,14 @@ export const KavachProductAdmin: React.FC = () => {
         isActive: true,
         createdAt: new Date('2024-01-01'),
         updatedAt: new Date('2024-01-15'),
+        vendor: 'Spiritual Store Delhi',
+        weight: 150,
+        dimensions: { length: 7.6, width: 7.6, height: 0.5 },
+        sku: 'GY001',
+        barcode: '1234567890123',
+        seoTitle: 'Sacred Ganesha Yantra - Remove Obstacles & Bring Prosperity',
+        seoDescription: 'Authentic brass Ganesha Yantra handcrafted by skilled artisans. Perfect for removing obstacles and attracting prosperity.',
+        metaKeywords: ['ganesha yantra', 'brass yantra', 'spiritual items', 'prosperity'],
       },
       {
         id: '2',
@@ -65,6 +73,9 @@ export const KavachProductAdmin: React.FC = () => {
         isActive: true,
         createdAt: new Date('2024-01-02'),
         updatedAt: new Date('2024-01-16'),
+        vendor: 'Sacred Items Mumbai',
+        weight: 50,
+        sku: 'RM108',
       },
     ]);
 
@@ -73,13 +84,16 @@ export const KavachProductAdmin: React.FC = () => {
       { id: '2', name: 'Malas', description: 'Prayer beads and rosaries', isActive: true, order: 2 },
       { id: '3', name: 'Idols', description: 'Divine statues and figurines', isActive: true, order: 3 },
       { id: '4', name: 'Books', description: 'Spiritual literature', isActive: true, order: 4 },
+      { id: '5', name: 'Incense', description: 'Aromatic spiritual items', isActive: true, order: 5 },
+      { id: '6', name: 'Crystals', description: 'Healing crystals and stones', isActive: true, order: 6 },
     ]);
   }, []);
 
   const filteredProducts = products.filter(product => {
     const matchesSearch = searchTerm === '' || 
       product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      product.category.toLowerCase().includes(searchTerm.toLowerCase());
+      product.category.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      product.sku?.toLowerCase().includes(searchTerm.toLowerCase());
     
     const matchesCategory = categoryFilter === 'all' || product.category === categoryFilter;
     const matchesStatus = statusFilter === 'all' || 
@@ -114,6 +128,14 @@ export const KavachProductAdmin: React.FC = () => {
         isActive: productData.isActive ?? true,
         createdAt: new Date(),
         updatedAt: new Date(),
+        vendor: productData.vendor,
+        weight: productData.weight,
+        dimensions: productData.dimensions,
+        sku: productData.sku,
+        barcode: productData.barcode,
+        seoTitle: productData.seoTitle,
+        seoDescription: productData.seoDescription,
+        metaKeywords: productData.metaKeywords,
       };
       setProducts(prev => [...prev, newProduct]);
     }
@@ -135,6 +157,148 @@ export const KavachProductAdmin: React.FC = () => {
     ));
   };
 
+  const ImageUploadComponent = ({ images, onImagesChange }: { images: string[], onImagesChange: (images: string[]) => void }) => {
+    const [uploadingImages, setUploadingImages] = useState<ImageUpload[]>([]);
+
+    const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+      const files = Array.from(e.target.files || []);
+      
+      files.forEach(file => {
+        if (file.type.startsWith('image/')) {
+          const imageUpload: ImageUpload = {
+            id: Date.now().toString() + Math.random(),
+            file,
+            url: URL.createObjectURL(file),
+            isUploading: true,
+            uploadProgress: 0,
+          };
+          
+          setUploadingImages(prev => [...prev, imageUpload]);
+          
+          // Simulate upload progress
+          const interval = setInterval(() => {
+            setUploadingImages(prev => prev.map(img => 
+              img.id === imageUpload.id 
+                ? { ...img, uploadProgress: Math.min(img.uploadProgress + 10, 100) }
+                : img
+            ));
+          }, 200);
+          
+          // Complete upload after 2 seconds
+          setTimeout(() => {
+            clearInterval(interval);
+            setUploadingImages(prev => prev.filter(img => img.id !== imageUpload.id));
+            onImagesChange([...images, imageUpload.url]);
+          }, 2000);
+        }
+      });
+    };
+
+    const removeImage = (index: number) => {
+      const newImages = images.filter((_, i) => i !== index);
+      onImagesChange(newImages);
+    };
+
+    const moveImage = (fromIndex: number, toIndex: number) => {
+      const newImages = [...images];
+      const [movedImage] = newImages.splice(fromIndex, 1);
+      newImages.splice(toIndex, 0, movedImage);
+      onImagesChange(newImages);
+    };
+
+    return (
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <label className="block text-sm font-medium text-gray-700">Product Images</label>
+          <label className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 cursor-pointer transition-colors">
+            <Camera className="w-4 h-4 mr-2" />
+            Add Images
+            <input
+              type="file"
+              multiple
+              accept="image/*"
+              onChange={handleFileSelect}
+              className="hidden"
+            />
+          </label>
+        </div>
+        
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          {images.map((image, index) => (
+            <div key={index} className="relative group">
+              <img
+                src={image}
+                alt={`Product ${index + 1}`}
+                className="w-full h-32 object-cover rounded-lg border border-gray-200"
+              />
+              <div className="absolute inset-0 bg-black bg-opacity-50 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center space-x-2">
+                {index > 0 && (
+                  <button
+                    onClick={() => moveImage(index, index - 1)}
+                    className="p-1 bg-white text-gray-700 rounded hover:bg-gray-100"
+                    title="Move Left"
+                  >
+                    ←
+                  </button>
+                )}
+                <button
+                  onClick={() => removeImage(index)}
+                  className="p-1 bg-red-600 text-white rounded hover:bg-red-700"
+                  title="Remove"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+                {index < images.length - 1 && (
+                  <button
+                    onClick={() => moveImage(index, index + 1)}
+                    className="p-1 bg-white text-gray-700 rounded hover:bg-gray-100"
+                    title="Move Right"
+                  >
+                    →
+                  </button>
+                )}
+              </div>
+              {index === 0 && (
+                <div className="absolute top-2 left-2 bg-blue-600 text-white text-xs px-2 py-1 rounded">
+                  Primary
+                </div>
+              )}
+            </div>
+          ))}
+          
+          {uploadingImages.map((upload) => (
+            <div key={upload.id} className="relative">
+              <img
+                src={upload.url}
+                alt="Uploading"
+                className="w-full h-32 object-cover rounded-lg border border-gray-200 opacity-50"
+              />
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="bg-white rounded-lg p-2">
+                  <div className="w-16 h-2 bg-gray-200 rounded-full">
+                    <div 
+                      className="h-2 bg-blue-600 rounded-full transition-all duration-300"
+                      style={{ width: `${upload.uploadProgress}%` }}
+                    />
+                  </div>
+                  <p className="text-xs text-gray-600 mt-1 text-center">{upload.uploadProgress}%</p>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+        
+        {images.length === 0 && uploadingImages.length === 0 && (
+          <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
+            <ImageIcon className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+            <p className="text-gray-500">No images uploaded yet</p>
+            <p className="text-sm text-gray-400">Click "Add Images" to upload product photos</p>
+          </div>
+        )}
+      </div>
+    );
+  };
+
   const ProductForm = ({ product, onSave, onCancel }: any) => {
     const [formData, setFormData] = useState(product || {
       name: '',
@@ -147,11 +311,44 @@ export const KavachProductAdmin: React.FC = () => {
       tags: [],
       specifications: {},
       isActive: true,
+      vendor: '',
+      weight: 0,
+      dimensions: { length: 0, width: 0, height: 0 },
+      sku: '',
+      barcode: '',
+      seoTitle: '',
+      seoDescription: '',
+      metaKeywords: [],
     });
+
+    const [activeFormTab, setActiveFormTab] = useState<'basic' | 'images' | 'seo' | 'inventory'>('basic');
 
     const handleSubmit = (e: React.FormEvent) => {
       e.preventDefault();
       onSave(formData);
+    };
+
+    const handleSpecificationChange = (key: string, value: string) => {
+      setFormData({
+        ...formData,
+        specifications: {
+          ...formData.specifications,
+          [key]: value
+        }
+      });
+    };
+
+    const addSpecification = () => {
+      const key = prompt('Enter specification name:');
+      if (key) {
+        handleSpecificationChange(key, '');
+      }
+    };
+
+    const removeSpecification = (key: string) => {
+      const newSpecs = { ...formData.specifications };
+      delete newSpecs[key];
+      setFormData({ ...formData, specifications: newSpecs });
     };
 
     return (
@@ -159,7 +356,7 @@ export const KavachProductAdmin: React.FC = () => {
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="bg-white rounded-2xl shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto"
+          className="bg-white rounded-2xl shadow-xl max-w-6xl w-full max-h-[95vh] overflow-hidden"
         >
           <div className="flex justify-between items-center p-6 border-b border-gray-200">
             <h2 className="text-2xl font-bold text-gray-900">
@@ -170,102 +367,301 @@ export const KavachProductAdmin: React.FC = () => {
             </button>
           </div>
 
-          <form onSubmit={handleSubmit} className="p-6 space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Product Name</label>
-                <input
-                  type="text"
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Category</label>
-                <select
-                  value={formData.category}
-                  onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                  required
+          {/* Form Tabs */}
+          <div className="border-b border-gray-200">
+            <div className="flex space-x-8 px-6">
+              {[
+                { id: 'basic', label: 'Basic Info' },
+                { id: 'images', label: 'Images' },
+                { id: 'inventory', label: 'Inventory & Specs' },
+                { id: 'seo', label: 'SEO & Marketing' },
+              ].map((tab) => (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveFormTab(tab.id as any)}
+                  className={`py-4 px-2 border-b-2 font-medium text-sm ${
+                    activeFormTab === tab.id
+                      ? 'border-orange-500 text-orange-600'
+                      : 'border-transparent text-gray-500 hover:text-gray-700'
+                  }`}
                 >
-                  <option value="">Select Category</option>
-                  {categories.map(cat => (
-                    <option key={cat.id} value={cat.name}>{cat.name}</option>
-                  ))}
-                </select>
-              </div>
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+          </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Price (₹)</label>
-                <input
-                  type="number"
-                  value={formData.price}
-                  onChange={(e) => setFormData({ ...formData, price: Number(e.target.value) })}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                  required
-                />
-              </div>
+          <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto">
+            <div className="p-6">
+              {/* Basic Info Tab */}
+              {activeFormTab === 'basic' && (
+                <div className="space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Product Name *</label>
+                      <input
+                        type="text"
+                        value={formData.name}
+                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                        required
+                      />
+                    </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Original Price (₹)</label>
-                <input
-                  type="number"
-                  value={formData.originalPrice || ''}
-                  onChange={(e) => setFormData({ ...formData, originalPrice: Number(e.target.value) || undefined })}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                />
-              </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Category *</label>
+                      <select
+                        value={formData.category}
+                        onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                        required
+                      >
+                        <option value="">Select Category</option>
+                        {categories.map(cat => (
+                          <option key={cat.id} value={cat.name}>{cat.name}</option>
+                        ))}
+                      </select>
+                    </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Stock Quantity</label>
-                <input
-                  type="number"
-                  value={formData.stockQuantity}
-                  onChange={(e) => setFormData({ ...formData, stockQuantity: Number(e.target.value) })}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                  required
-                />
-              </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Price (₹) *</label>
+                      <input
+                        type="number"
+                        value={formData.price}
+                        onChange={(e) => setFormData({ ...formData, price: Number(e.target.value) })}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                        required
+                      />
+                    </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Status</label>
-                <select
-                  value={formData.isActive ? 'active' : 'inactive'}
-                  onChange={(e) => setFormData({ ...formData, isActive: e.target.value === 'active' })}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                >
-                  <option value="active">Active</option>
-                  <option value="inactive">Inactive</option>
-                </select>
-              </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Original Price (₹)</label>
+                      <input
+                        type="number"
+                        value={formData.originalPrice || ''}
+                        onChange={(e) => setFormData({ ...formData, originalPrice: Number(e.target.value) || undefined })}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Vendor</label>
+                      <input
+                        type="text"
+                        value={formData.vendor || ''}
+                        onChange={(e) => setFormData({ ...formData, vendor: e.target.value })}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Status</label>
+                      <select
+                        value={formData.isActive ? 'active' : 'inactive'}
+                        onChange={(e) => setFormData({ ...formData, isActive: e.target.value === 'active' })}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                      >
+                        <option value="active">Active</option>
+                        <option value="inactive">Inactive</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Description *</label>
+                    <textarea
+                      value={formData.description}
+                      onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                      rows={4}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Tags (comma separated)</label>
+                    <input
+                      type="text"
+                      value={Array.isArray(formData.tags) ? formData.tags.join(', ') : ''}
+                      onChange={(e) => setFormData({ ...formData, tags: e.target.value.split(',').map(tag => tag.trim()) })}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                      placeholder="e.g., Spiritual, Meditation, Sacred"
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* Images Tab */}
+              {activeFormTab === 'images' && (
+                <div className="space-y-6">
+                  <ImageUploadComponent
+                    images={formData.images}
+                    onImagesChange={(images) => setFormData({ ...formData, images })}
+                  />
+                </div>
+              )}
+
+              {/* Inventory & Specs Tab */}
+              {activeFormTab === 'inventory' && (
+                <div className="space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Stock Quantity *</label>
+                      <input
+                        type="number"
+                        value={formData.stockQuantity}
+                        onChange={(e) => setFormData({ ...formData, stockQuantity: Number(e.target.value) })}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                        required
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">SKU</label>
+                      <input
+                        type="text"
+                        value={formData.sku || ''}
+                        onChange={(e) => setFormData({ ...formData, sku: e.target.value })}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Barcode</label>
+                      <input
+                        type="text"
+                        value={formData.barcode || ''}
+                        onChange={(e) => setFormData({ ...formData, barcode: e.target.value })}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Weight (grams)</label>
+                      <input
+                        type="number"
+                        value={formData.weight || ''}
+                        onChange={(e) => setFormData({ ...formData, weight: Number(e.target.value) || undefined })}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Length (cm)</label>
+                      <input
+                        type="number"
+                        step="0.1"
+                        value={formData.dimensions?.length || ''}
+                        onChange={(e) => setFormData({ 
+                          ...formData, 
+                          dimensions: { 
+                            ...formData.dimensions, 
+                            length: Number(e.target.value) || 0 
+                          } 
+                        })}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Width (cm)</label>
+                      <input
+                        type="number"
+                        step="0.1"
+                        value={formData.dimensions?.width || ''}
+                        onChange={(e) => setFormData({ 
+                          ...formData, 
+                          dimensions: { 
+                            ...formData.dimensions, 
+                            width: Number(e.target.value) || 0 
+                          } 
+                        })}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Specifications */}
+                  <div>
+                    <div className="flex justify-between items-center mb-4">
+                      <label className="block text-sm font-medium text-gray-700">Product Specifications</label>
+                      <button
+                        type="button"
+                        onClick={addSpecification}
+                        className="px-3 py-1 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm"
+                      >
+                        Add Specification
+                      </button>
+                    </div>
+                    <div className="space-y-3">
+                      {Object.entries(formData.specifications || {}).map(([key, value]) => (
+                        <div key={key} className="flex items-center space-x-3">
+                          <input
+                            type="text"
+                            value={key}
+                            readOnly
+                            className="w-1/3 px-3 py-2 border border-gray-300 rounded-lg bg-gray-50"
+                          />
+                          <input
+                            type="text"
+                            value={value}
+                            onChange={(e) => handleSpecificationChange(key, e.target.value)}
+                            className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => removeSpecification(key)}
+                            className="p-2 text-red-600 hover:bg-red-50 rounded-lg"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* SEO Tab */}
+              {activeFormTab === 'seo' && (
+                <div className="space-y-6">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">SEO Title</label>
+                    <input
+                      type="text"
+                      value={formData.seoTitle || ''}
+                      onChange={(e) => setFormData({ ...formData, seoTitle: e.target.value })}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                      placeholder="Optimized title for search engines"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">SEO Description</label>
+                    <textarea
+                      value={formData.seoDescription || ''}
+                      onChange={(e) => setFormData({ ...formData, seoDescription: e.target.value })}
+                      rows={3}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                      placeholder="Meta description for search results"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Meta Keywords (comma separated)</label>
+                    <input
+                      type="text"
+                      value={Array.isArray(formData.metaKeywords) ? formData.metaKeywords.join(', ') : ''}
+                      onChange={(e) => setFormData({ ...formData, metaKeywords: e.target.value.split(',').map(keyword => keyword.trim()) })}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                      placeholder="Keywords for SEO optimization"
+                    />
+                  </div>
+                </div>
+              )}
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
-              <textarea
-                value={formData.description}
-                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                rows={4}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                required
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Tags (comma separated)</label>
-              <input
-                type="text"
-                value={Array.isArray(formData.tags) ? formData.tags.join(', ') : ''}
-                onChange={(e) => setFormData({ ...formData, tags: e.target.value.split(',').map(tag => tag.trim()) })}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                placeholder="e.g., Spiritual, Meditation, Sacred"
-              />
-            </div>
-
-            <div className="flex justify-end space-x-4">
+            <div className="flex justify-end space-x-4 p-6 border-t border-gray-200 bg-gray-50">
               <button
                 type="button"
                 onClick={onCancel}
@@ -412,7 +808,7 @@ export const KavachProductAdmin: React.FC = () => {
                   Product
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Category
+                  Category & SKU
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Price
@@ -439,21 +835,36 @@ export const KavachProductAdmin: React.FC = () => {
                   <tr key={product.id} className="hover:bg-gray-50">
                     <td className="px-6 py-4">
                       <div className="flex items-center space-x-4">
-                        <img
-                          src={product.images[0]}
-                          alt={product.name}
-                          className="w-12 h-12 rounded-lg object-cover"
-                        />
+                        <div className="relative">
+                          <img
+                            src={product.images[0]}
+                            alt={product.name}
+                            className="w-16 h-16 rounded-lg object-cover"
+                          />
+                          {product.images.length > 1 && (
+                            <div className="absolute -top-1 -right-1 bg-blue-600 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center">
+                              {product.images.length}
+                            </div>
+                          )}
+                        </div>
                         <div>
                           <div className="text-sm font-medium text-gray-900">{product.name}</div>
                           <div className="text-sm text-gray-500 truncate max-w-xs">{product.description}</div>
+                          {product.vendor && (
+                            <div className="text-xs text-blue-600">Vendor: {product.vendor}</div>
+                          )}
                         </div>
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="px-3 py-1 bg-orange-100 text-orange-700 text-xs font-medium rounded-full">
-                        {product.category}
-                      </span>
+                      <div>
+                        <span className="px-3 py-1 bg-orange-100 text-orange-700 text-xs font-medium rounded-full">
+                          {product.category}
+                        </span>
+                        {product.sku && (
+                          <div className="text-xs text-gray-500 mt-1">SKU: {product.sku}</div>
+                        )}
+                      </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div>
